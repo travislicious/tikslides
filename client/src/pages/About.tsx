@@ -8,16 +8,16 @@ export default function AboutPage() {
                 <Link to="/">
                     <ArrowLeft className="md:size-10"/>
                 </Link>
-                <h1 className="font-bold md:text-3xl">About TikTracks.</h1>
+                <h1 className="font-bold md:text-3xl">About TikSlides.</h1>
             </div>
-            <h1 className="text-2xl font-bold md:text-4xl">TikTracks.</h1>
+            <h1 className="text-2xl font-bold md:text-4xl">TikSlides.</h1>
             <hr className="border border-neutral"/>
-            <p className="md:text-xl">TikTracks is a website who helps downloading Tiktok Tracks from videos using a single link in one click, all for free. You can download the audio only, a video made with the source video cover and a video made with the song cover.</p>
+            <p className="md:text-xl">TikSlides is a website who helps converting Tiktok Slideshows of any length into videos.</p>
             <h2 className="font-bold md:text-2xl">Key Features.</h2>
             <ul className="pl-2 flex flex-col gap-2 md:text-xl">
                 <li>- Fast And Easy Use.</li>
                 <li>- Intuitive UI.</li>
-                <li>- Multiple Download Options.</li>
+                <li>- Multiple conversion options.</li>
                 <li>- 100 % Legal</li>
                 <li>- Free.</li>
             </ul>
