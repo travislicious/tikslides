@@ -4,6 +4,7 @@ import App from './App.tsx'
 import AboutPage from './pages/About.tsx'
 import TermsPage from './pages/Terms.tsx'
 import ErrorSection from './pages/ErrorPage.tsx'
+import DownloadPage from './pages/Download.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 
@@ -19,6 +20,10 @@ const router = createBrowserRouter([{
 {
   path: '/terms',
   element: <TermsPage/>
+},
+{
+  path: '/download/:id',
+  element: <DownloadPage/>
 }
 ])
 
