@@ -18,7 +18,7 @@ export const ListItemComponent: React.FC<{
     <li className='w-full bg-base-300 rounded flex items-center p-2 gap-4'>
         <img src={item.url} alt="Image." className='size-16 rounded object-cover' />
         <h1 className='text-2xl font-bold'>{index + 1}</h1>
-        <div className='w-full flex justify-end items-center'>
+        <div className='w-full flex justify-end items-center gap-2'>
         <button
             onClick={onMoveUp}
             disabled={index === 0}
