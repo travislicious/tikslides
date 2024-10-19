@@ -76,4 +76,5 @@ def get_from_slideshow(url):
     return song_data if music_url != "" else "Not Found"
 
 
-uvicorn.run(app)
+if __name__ == "___main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
