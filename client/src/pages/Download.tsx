@@ -1,21 +1,73 @@
 import { ArrowLeft, Share, Settings2, ListCheck, ArrowRight } from "lucide-react"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ItemList } from "../components/List";
+import Switch from "../components/Switch";
+import { useGetData } from "../utils/api";
 
 type ListItem = {
     id: number;
     url: string;
 };
 
-const initialItems: ListItem[] = [
-    { id: 1, url: 'https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-i-photomode-euttp/2b86c16b2d5540ce93d22233ad8f183a~tplv-photomode-sr:1080:0:1080:0:q75.jpeg?dr=10823&nonce=48750&refresh_token=504031512e7a1bca1b9dd79caea5584d&x-expires=1730660400&x-signature=DuCx5ZyyyfNtsnaikyV46NhTpR4%3D&biz_tag=tt_photomode&idc=my&ps=28cf8ac7&s=AWEME_DETAIL&sc=image&shcp=1d1a97fc&shp=d05b14bd&t=5897f7ec' },
-    { id: 2, url: 'https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-i-photomode-euttp/634e671e8bc644c8984bd159172612dd~tplv-photomode-sr:1080:0:1080:0:q75.jpeg?dr=10823&nonce=58374&refresh_token=504da8ada7b8b3deb345690a87023621&x-expires=1730660400&x-signature=EV8Yg26pHg%2BvO6XDyS6MlX4RWv4%3D&biz_tag=tt_photomode&idc=my&ps=28cf8ac7&s=AWEME_DETAIL&sc=image&shcp=1d1a97fc&shp=d05b14bd&t=5897f7ec' },
-];
+const initialItems: ListItem[] = [];
+
 
 export default function DownloadPage() {
     const [imgItems, setImgItems] = useState<ListItem[]>(initialItems);
     const [editOpened, setEditOpened] = useState(false)
     const [optionsOpened, setOptionOpened] = useState(false)
+    const [isSwitchOn, setIsSwitchOn] = useState<boolean>(false);
+    const [length, setLength] = useState("1")
+    const [currentSlide, setCurrentSlide] = useState(0)
+    const [loopable, setLoopable] = useState(false)
+    const [editedList, setEditedList] = useState<ListItem[]>([])
+    const url = window.sessionStorage.getItem('url')
+    const { data, isLoading } = useGetData(url!)
+    const [musicUrl, setMusicUrl] = useState(data?.music_url)
+    const [duration, setDuration] = useState(0)
+    
+    const handleSwitchChange = (checked: boolean) => {
+        setIsSwitchOn(checked);
+    }
+    
+    const getAudioDuration = (url: string) => {
+        const audio = new Audio(url);
+        audio.addEventListener('loadedmetadata', () => {
+            setDuration(Math.floor(audio.duration))
+        });
+    };
+
+    useEffect(() => {
+        if (data) {
+            getAudioDuration(data!.music_url)
+            const slides = data?.slides_url
+            slides.map((slide, idx) => {
+                setEditedList((prev) => [...prev, { id: idx, url: slide }])
+                setImgItems((prev) => [...prev, { id: idx, url: slide }])
+            })
+        }
+    }, [data])
+
+    function closeOrder() {
+        setEditedList(imgItems)
+        setEditOpened(false)
+    }
+
+    function moveLeft() {
+        if (currentSlide > 0) {
+            setCurrentSlide(currentSlide - 1)
+        }
+    }
+
+    function moveRight() {
+        if (currentSlide < imgItems.length - 1) {
+            setCurrentSlide(currentSlide + 1)
+        }
+    }
+
+    if (isLoading) {
+        return (<main className="w-screen h-screen flex justify-center items-center"><span className="loading loading-spinner loading-lg"></span></main>)
+    }
 
     if (!editOpened) {
         return (
@@ -31,21 +83,21 @@ export default function DownloadPage() {
             </section>
             <section className="w-full h-full flex flex-col items-center justify-center p-4 gap-4">
                 { !optionsOpened && (<section className="w-full sm:w-96">
-                    <h1 className="w-full text-4xl truncate"><span className="font-bold">Travis's</span> video.</h1>
-                    <h3 className="mt-1 text-xl font-semibold w-full truncate">Description.</h3>
+                    <h1 className="w-full text-4xl truncate"><span className="font-bold">{data?.video_author}'s</span> video.</h1>
+                    <h3 className="mt-1 text-xl font-semibold w-full truncate">{data?.video_description}</h3>
                 </section>)}
                 { /* Carousel */ }
-                { !optionsOpened && (<div className="w-80 h-80 sm:h-96 sm:w-96 bg-primary rounded-lg"></div>)}
+                { !optionsOpened && (<img src={imgItems[currentSlide]?.url} alt={`Slide ${currentSlide + 1}`} className="w-80 h-80 sm:h-96 sm:w-96 rounded-lg object-cover"/>)}
                 <section className={`w-full flex sm:w-96 items-center ${ !optionsOpened ? "justify-between" : "justify-start"} gap-2`}>
                     <button className="btn btn-square" onClick={() => setOptionOpened(!optionsOpened)}>
                         <Settings2/>
                     </button>
                     { !optionsOpened && (<div className="flex gap-4 items-center justify-center bg-base-200 rounded-lg">
-                        <button className="btn btn-ghost">
+                        <button className="btn btn-ghost" onClick={moveLeft}>
                             <ArrowLeft/>
                         </button>
-                        <h1 className="text-2xl font-bold">1/5</h1>
-                        <button className="btn btn-ghost">
+                        <h1 className="text-2xl font-bold">{currentSlide + 1}/{imgItems.length}</h1>
+                        <button className="btn btn-ghost" onClick={moveRight}>
                             <ArrowRight/>
                         </button>
                     </div>)}
@@ -56,22 +108,15 @@ export default function DownloadPage() {
                 { optionsOpened && (<section className="w-full sm:w-96 flex flex-col gap-3 items-center justify-center">
                     <h1 className="w-full text-3xl font-bold">Options.</h1>
                     <div className="w-full flex flex-col gap-2 pl-4">
+                        <Switch checked={isSwitchOn} onChange={handleSwitchChange} text={isSwitchOn ? "Slide Length: Manual." : "Slide Length: Auto."}/>
+                        { isSwitchOn && (<div className="w-full flex items-center gap-4">
+                            <label htmlFor="" className="text-lg font-semibold">Length:</label>
+                            <input type="number" name="length" id="length" value={length} onChange={(e) => setLength(e.target.value)} placeholder="0" className="input input-bordered w-full"/>
+                        </div>)}
+                        <h1 className="italic text-primary-content/50">{length} Per Second = {imgItems?.length * parseInt(length)} Seconds / {duration} Seconds</h1>
                         <div className="w-full flex items-center gap-2">
-                            <input type="checkbox" name="auto" id="auto" checked/>
-                            <label htmlFor="auto" className="text-lg">Slide Length: Auto.</label>
-                        </div>
-                        <div className="w-full flex items-center gap-2">
-                            <input type="checkbox" name="manual" id="manual" />
-                            <label htmlFor="manual" className="text-lg">Slide Length: Manual.</label>
-                        </div>
-                        <div className="w-full flex items-center gap-2 hidden">
-                            <label htmlFor="" className="text-lg">Length:</label>
-                            <input type="number" name="length" id="length" />
-                        </div>
-                        <h1 className="italic text-primary-content/50">1 Per Second = 5 Seconds / 5 Seconds</h1>
-                        <div className="w-full flex items-center gap-2">
-                            <input type="checkbox" name="loopable" id="loopable" />
-                            <label htmlFor="loopable" className="text-lg">Loopable.</label>
+                            <input type="checkbox" name="loopable" id="loopable" className="checkbox"/>
+                            <label htmlFor="loopable" className="text-lg font-semibold">Loopable.</label>
                         </div>
                     </div>
                 </section>)}
@@ -93,11 +138,11 @@ export default function DownloadPage() {
             </section>
             <section className="w-full h-full flex flex-col gap-3 sm:items-center sm:justify-center sm:w-[30rem] sm:gap-4 sm:h-[35rem] overflow-auto">
                 <h1 className="hidden sm:block font-bold text-3xl">Edit Slides Order.</h1>
-                <ItemList items={imgItems} setItems={setImgItems}/>
+                <ItemList items={editedList} setItems={setEditedList}/>
             </section>
             <section className="w-full flex gap-2 items-center justify-center mb-4 p-4 sm:w-72">
-                <button className="w-full btn btn-accent font-semibold text-lg">Save Changes.</button>
-                <button className="hidden sm:block w-full btn btn-base-300 font-semibold text-lg" onClick={() => setEditOpened(false)}>Back</button>
+                <button className="w-full btn btn-accent font-semibold text-lg" onClick={() => setEditOpened(false)}>Save Changes.</button>
+                <button className="hidden sm:block w-full btn btn-base-300 font-semibold text-lg" onClick={closeOrder}>Back</button>
             </section>
         </main>
         )

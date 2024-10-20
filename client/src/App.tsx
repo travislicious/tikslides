@@ -28,6 +28,7 @@ export default function App() {
           if (photoIdMatch) {
             const photoId = photoIdMatch[1];
             navigate(`/download/${photoId}`)
+            window.sessionStorage.setItem('url', url)
           }
         } else {
           setError({invalid: true, missing: false})
